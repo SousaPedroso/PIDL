@@ -1,9 +1,12 @@
-"""This file provides methods necessary to configure features and labels
+"""This module provides methods necessary to configure features and labels
 Methods available:
     one hot encode
     Change data type from 32-bit float to 16-bit int and applies scaling between -32767 and 32767
     Change data type from 16-bit int to 32-bit float and applies normalization
     Change data type from numpy to torch
+    Mixup operation
+    Update a dictionary with a specific key, appending the value to a list
+    negative log likelihood
 """
 import numpy as np
 import torch
@@ -49,4 +52,16 @@ def do_mixup(x, mixup_lambda):
     out = (x[0 :: 2].transpose(0, -1) * mixup_lambda[0 :: 2] + \
         x[1 :: 2].transpose(0, -1) * mixup_lambda[1 :: 2]).transpose(0, -1)
     return out
-    
+
+# pylint: disable=redefined-builtin
+def append_to_dict(dict, key, value):
+    """Update or create a dictionary with 'key' appending the value to a list"""
+    if key in dict.keys():
+        dict[key].append(value)
+    else:
+        dict[key] = [value]
+
+# pylint: disable=missing-function-docstring
+def clip_nll(output_dict, target_dict):
+    loss = - torch.mean(target_dict['target'] * output_dict['clipwise_output'])
+    return loss
