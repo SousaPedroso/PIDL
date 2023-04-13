@@ -201,14 +201,14 @@ class Cnn14(nn.Module):
         return output_dict
 
 class Transfer_Cnn14(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin, 
+    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
         fmax, classes_num, freeze_base=True):
         """Classifier for a new task using pretrained Cnn14 as a sub module.
         """
         super(Transfer_Cnn14, self).__init__()
         audioset_classes_num = 527
 
-        self.base = Cnn14(sample_rate, window_size, hop_size, mel_bins, fmin, 
+        self.base = Cnn14(sample_rate, window_size, hop_size, mel_bins, fmin,
             fmax, audioset_classes_num)
 
         # Transfer to another task layer
