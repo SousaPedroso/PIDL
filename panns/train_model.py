@@ -78,11 +78,13 @@ def evaluate_model(model, loss_func, validation_loader, device):
         y_true = output_dict['target']
         y_pred = output_dict['clipwise_output']
 
+    predict_indexes = np.argmax(y_true, axis=-1)
+    class_indices = np.argmax(y_pred, axis=-1)
     # pylint: disable=[invalid-name, line-too-long]
-    f1 = f1_score(np.argmax(y_true, axis=-1), np.argmax(y_pred, axis=-1), average='weighted')
-    precision = precision_score(np.argmax(y_true, axis=-1), np.argmax(y_pred, axis=-1), average='weighted')
-    recall = recall_score(np.argmax(y_true, axis=-1), np.argmax(y_pred, axis=-1), average='weighted')
-    acc = accuracy_score(np.argmax(y_true, axis=-1), np.argmax(y_pred, axis=-1))
+    f1 = f1_score(predict_indexes, class_indices, average='weighted')
+    precision = precision_score(predict_indexes, class_indices, average='weighted')
+    recall = recall_score(predict_indexes, class_indices, average='weighted')
+    acc = accuracy_score(predict_indexes, class_indices)
 
     return val_loss, f1, precision, recall, acc
 
