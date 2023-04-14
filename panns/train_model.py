@@ -90,7 +90,7 @@ def evaluate_model(model, loss_func, validation_loader, device):
 
 # pylint: disable=[missing-function-docstring, too-many-arguments, too-many-locals]
 def train_model(model, train_loader, validation_loader, tracking_server_uri,
-                experiment_name, iterations, audio_augmentation, device):
+                experiment_name, iterations, audio_augmentation, device, config):
 
     mlflow.set_tracking_uri(tracking_server_uri)
     mlflow.set_experiment(experiment_name)
@@ -146,6 +146,7 @@ def train_model(model, train_loader, validation_loader, tracking_server_uri,
             mlflow.log_metric("f1", f1)
 
         mlflow.pytorch.log_model(model, artifact_path="models")
+        mlflow.set_tags(config)
 
 
 def run(params):
@@ -179,7 +180,8 @@ def run(params):
         experiment_name,
         iterations,
         audio_aug,
-        device
+        device,
+        config
     )
 
 
