@@ -6,8 +6,16 @@ Methods available:
     Change data type from numpy to torch
     Mixup operation
     Update a dictionary with a specific key, appending the value to a list
+    Set integer labels for each class from an audio directory with the following structure
+        bird_species2
+
+        bird_species2
+        ...
+
+        bird_speciesn
     negative log likelihood
 """
+import os
 import numpy as np
 import torch
 
@@ -60,6 +68,18 @@ def append_to_dict(dict, key, value):
         dict[key].append(value)
     else:
         dict[key] = [value]
+
+def set_labels(dataset_dir):
+    """Find the classes of a directory and returns them with a
+    dictionary{label: integer} for each class from an audio directory """
+    labels = []
+    for paths in os.walk(dataset_dir):
+        if len(paths[1]) != 0:
+            labels.extend(paths[1])
+
+    labels = sorted(labels)
+    lb_to_idx = {lb: idx for idx, lb in enumerate(labels)}
+    return labels, lb_to_idx
 
 # pylint: disable=missing-function-docstring
 def clip_nll(output_dict, target_dict):

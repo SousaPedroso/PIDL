@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import h5py
 import librosa
-from utilities import to_one_hot, float32_to_int16
+from utilities import to_one_hot, float32_to_int16, set_labels
 
 # pylint: disable=missing-function-docstring
 def pack_audio_files_to_hdfs(args: argparse.Namespace):
@@ -37,14 +37,7 @@ def pack_audio_files_to_hdfs(args: argparse.Namespace):
 
     audio_names = sorted(audio_names)
     audio_paths = sorted(audio_paths)
-    labels = []
-    for paths in os.walk(audios_dir):
-        if len(paths[1]) != 0:
-            labels.extend(paths[1])
-
-    labels = sorted(labels)
-
-    lb_to_idx = {lb: idx for idx, lb in enumerate(labels)}
+    _, lb_to_idx = set_labels(audios_dir)
     # idx_to_lb = {idx: lb for idx, lb in enumerate(labels)}
 
     meta_dict = {
