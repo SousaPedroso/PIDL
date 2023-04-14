@@ -1,6 +1,4 @@
 # pylint: disable=missing-module-docstring
-import os
-
 import warnings
 import argparse
 
