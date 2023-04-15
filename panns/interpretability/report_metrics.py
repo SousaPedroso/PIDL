@@ -118,7 +118,6 @@ if __name__ == "__main__":
         "--batch_size",
         type=int,
         default=32,
-        help="Path to compute the metrics. Default value is the validation fold"
     )
 
     parser.add_argument(
