@@ -42,15 +42,12 @@ def main(params):
 
     for batch_data_dict in loader:
         batch_waveform_dict = {"waveform": move_data_to_device(batch_data_dict["waveform"], device)}
-        # pylint: disable=line-too-long
-        batch_audio_name_dict = {"audio_name": move_data_to_device(batch_data_dict["audio_name"], device)}
         batch_target_dict = {"target": move_data_to_device(batch_data_dict["target"], device)}
 
         with torch.no_grad():
             logged_model.eval()
             batch_output = logged_model(batch_waveform_dict["waveform"])
 
-        append_to_dict(output_dict, 'audio_name', batch_audio_name_dict['audio_name'])
         append_to_dict(output_dict, 'clipwise_output', batch_output['clipwise_output'])
         append_to_dict(output_dict, 'target', batch_target_dict['target'])
 

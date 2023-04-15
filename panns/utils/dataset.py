@@ -1,6 +1,7 @@
 """Auxiliary classes to train and evaluate PANNs models
 https://github.com/qiuqiangkong/panns_transfer_to_gtzan/blob/master/utils/data_generator.py
 """
+# pylint: disable=import-error
 from utils.utilities import int16_to_float32
 import numpy as np
 import h5py
