@@ -142,6 +142,8 @@ def train_model(model, train_loader, validation_loader, tracking_server_uri,
             mlflow.log_metric("precision", precision)
             mlflow.log_metric("recall", recall)
             mlflow.log_metric("f1", f1)
+            mlflow.log_metric("train_loss", loss)
+            mlflow.log_metric("val_loss", val_loss)
 
         mlflow.pytorch.log_model(model, artifact_path="models")
         mlflow.set_tags(config)
