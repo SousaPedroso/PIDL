@@ -8,7 +8,7 @@ import torch.utils.data as data
 import torch.optim as optim
 
 from panns_model import Transfer_Cnn14
-from utils.utilities import move_data_to_device, do_mixup, append_to_dict, clip_nll
+from utils.utilities import move_data_to_device, do_mixup, clip_nll
 from utils.dataset import GtzanDataset, TrainSampler, EvaluateSampler, collate_fn
 
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
@@ -40,51 +40,57 @@ def load_data(hdf5_path, holdout_fold, batch_size, num_workers=0):
 
     return train_loader, validation_loader
 
-# pylint: disable=missing-function-docstring
 def evaluate_model(model, loss_func, validation_loader, device):
+    """Evaluate the model and returns a dictionary with the audios
+        and classes/classifications for debugging"""
+
     output_dict = {}
+    audio_names = []
+    clipwise_outputs = []
+    targets = []
 
     val_loss = 0
     for _, batch_data_dict in enumerate(validation_loader):
-        batch_waveform_dict = {"waveform": move_data_to_device(batch_data_dict["waveform"], device)}
-        # pylint: disable=line-too-long
-        batch_audio_name_dict = {"audio_name": move_data_to_device(batch_data_dict["audio_name"], device)}
-        batch_target_dict = {"target": move_data_to_device(batch_data_dict["target"], device)}
+        batch_waveform = move_data_to_device(batch_data_dict["waveform"], device)
+        batch_audio_name = move_data_to_device(batch_data_dict["audio_name"], device)
+        batch_target = move_data_to_device(batch_data_dict["target"], device)
 
         with torch.no_grad():
             model.eval()
-            batch_output = model(batch_waveform_dict["waveform"])
+            batch_output = model(batch_waveform)
 
-        append_to_dict(output_dict, 'audio_name', batch_audio_name_dict['audio_name'])
-        append_to_dict(output_dict, 'clipwise_output', batch_output['clipwise_output'])
-        append_to_dict(output_dict, 'target', batch_target_dict['target'])
+        audio_names.append(batch_audio_name)
+        clipwise_outputs.append(batch_output)
+        targets.append(batch_target)
 
-        loss = loss_func(batch_output, batch_target_dict)
-        val_loss += loss.item() * len(batch_output['clipwise_output'])
+        loss = loss_func(batch_output, batch_target)
+        val_loss += loss.item() * len(batch_output)
 
-    # pylint: disable=consider-iterating-dictionary
-    for key in output_dict.keys():
-        output_dict[key] = np.concatenate(output_dict[key], axis=0)
+    targets = np.concatenate(targets, axis=0)
+    clipwise_outputs = np.concatenate(clipwise_outputs, axis=0)
+    audio_names = np.concatenate(audio_names, axis=0)
 
-    val_loss /= len(output_dict['clipwise_output'])
+    val_loss /= len(clipwise_outputs)
 
     if device == 'cuda':
-        y_true = output_dict['target'].data.cpu().numpy()
-        y_pred = output_dict['clipwise_output'].data.cpu().numpy()
+        y_true = targets.data.cpu().numpy()
+        y_pred = clipwise_outputs.data.cpu().numpy()
 
     else:
-        y_true = output_dict['target']
-        y_pred = output_dict['clipwise_output']
+        y_true = targets
+        y_pred = clipwise_outputs
 
     predict_indexes = np.argmax(y_true, axis=-1)
     class_indices = np.argmax(y_pred, axis=-1)
     # pylint: disable=[invalid-name, line-too-long]
-    f1 = f1_score(predict_indexes, class_indices, average='weighted')
-    precision = precision_score(predict_indexes, class_indices, average='weighted')
-    recall = recall_score(predict_indexes, class_indices)
+    f1 = f1_score(predict_indexes, class_indices, average='macro')
+    precision = precision_score(predict_indexes, class_indices, average='macro')
+    recall = recall_score(predict_indexes, class_indices, average="macro")
     acc = accuracy_score(predict_indexes, class_indices)
 
-    return val_loss, f1, precision, recall, acc
+    output_dict = {"audio_name": audio_names, "target": targets, "output": clipwise_outputs}
+
+    return val_loss, f1, precision, recall, acc, output_dict
 
 # pylint: disable=[missing-function-docstring, too-many-arguments, too-many-locals]
 def train_model(model, train_loader, validation_loader, tracking_server_uri,
@@ -111,21 +117,17 @@ def train_model(model, train_loader, validation_loader, tracking_server_uri,
             model.train()
 
             if audio_augmentation:
-                batch_output_dict = model(
+                batch_output = model(
                     batch_data_dict["waveform"],
                     batch_data_dict["mixup_lambda"]
                 )
-
-                batch_target_dict = {
-                    "target": do_mixup(batch_data_dict["target"], batch_data_dict["mixup_lambda"])
-                }
+                batch_target = do_mixup(batch_data_dict["target"], batch_data_dict["mixup_lambda"])
 
             else:
-                batch_output_dict = model(batch_data_dict["waveform"], None)
+                batch_output = model(batch_data_dict["waveform"], None)
+                batch_target = batch_data_dict["target"]
 
-                batch_target_dict = {"target": batch_data_dict["target"]}
-
-            loss = clip_nll(batch_output_dict, batch_target_dict)
+            loss = clip_nll(batch_output, batch_target)
 
             # Backward
             optimizer.zero_grad()
@@ -133,10 +135,10 @@ def train_model(model, train_loader, validation_loader, tracking_server_uri,
             optimizer.step()
 
             # pylint: disable=[invalid-name, line-too-long]
-            val_loss, f1, precision, recall, acc = evaluate_model(model, clip_nll, validation_loader, device)
+            val_loss, f1, precision, recall, acc, _ = evaluate_model(model, clip_nll, validation_loader, device)
 
-            print(f"Iteration {iteration+1}- training loss: {loss}. val loss: {val_loss}. f1: {f1}.\
-                prec val: {precision}. recall val: {recall}. acc val: {acc}")
+            print(f"Iteration {iteration+1}- training loss: {loss}. val loss: {val_loss}. f1: {f1}.",
+                f"prec val: {precision}. recall val: {recall}. acc val: {acc}")
 
             mlflow.log_metric("accuracy", acc)
             mlflow.log_metric("precision", precision)
