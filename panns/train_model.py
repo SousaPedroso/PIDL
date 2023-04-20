@@ -81,7 +81,7 @@ def evaluate_model(model, loss_func, validation_loader, device):
     # pylint: disable=[invalid-name, line-too-long]
     f1 = f1_score(predict_indexes, class_indices, average='weighted')
     precision = precision_score(predict_indexes, class_indices, average='weighted')
-    recall = recall_score(predict_indexes, class_indices, average='weighted')
+    recall = recall_score(predict_indexes, class_indices)
     acc = accuracy_score(predict_indexes, class_indices)
 
     return val_loss, f1, precision, recall, acc
