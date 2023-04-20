@@ -191,14 +191,7 @@ class Cnn14(nn.Module):
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
 
-        clipwise_output = torch.sigmoid(self.fc_audioset(x))
-
-        output_dict = {
-            'clipwise_output': clipwise_output,
-            'embedding': embedding
-        }
-
-        return output_dict
+        return embedding
 
 class Transfer_Cnn14(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
@@ -237,10 +230,8 @@ class Transfer_Cnn14(nn.Module):
     def forward(self, input, mixup_lambda=None):
         """Input: (batch_size, data_length)
         """
-        output_dict = self.base(input, mixup_lambda)
-        embedding = output_dict['embedding']
+        embedding = self.base(input, mixup_lambda)
 
         clipwise_output =  torch.log_softmax(self.fc_transfer(embedding), dim=-1)
-        output_dict['clipwise_output'] = clipwise_output
 
-        return output_dict
+        return clipwise_output

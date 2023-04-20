@@ -82,6 +82,6 @@ def set_labels(dataset_dir):
     return labels, lb_to_idx
 
 # pylint: disable=missing-function-docstring
-def clip_nll(output_dict, target_dict):
-    loss = - torch.mean(target_dict['target'] * output_dict['clipwise_output'])
+def clip_nll(output, target):
+    loss = - torch.mean(target * output)
     return loss
