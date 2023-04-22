@@ -1,4 +1,5 @@
 # pylint: disable=missing-module-docstring
+import os
 import warnings
 import argparse
 
@@ -160,6 +161,7 @@ def run(params):
     holdout_fold = params.holdout_fold
     num_workers = params.num_workers
     train_path = params.train_path
+    pretrained_path = params.pretrained_path
     device = 'cuda' if (params.cuda and torch.cuda.is_available()) else 'cpu'
 
     # reproducibility
@@ -170,10 +172,19 @@ def run(params):
 
     config = dict(sample_rate=params.audio_sample_rate, window_size=params.audio_window_size,
         hop_size=params.audio_hop_size, mel_bins=params.spectrum_mel_bins, fmin=params.audio_fmin,
-        fmax=params.audio_fmax, classes_num=params.num_classes)
+        fmax=params.audio_fmax, classes_num=params.num_classes, freeze_base=params.freeze_base)
 
     train_loader, validation_loader = load_data(train_path, holdout_fold, batch_size, num_workers)
     model = Transfer_Cnn14(**config)
+    if len(pretrained_path) == 0:
+        print("Training model without Transfer Learning")
+
+    elif not os.path.isfile(pretrained_path):
+        raise OSError(f"File {pretrained_path} does not exist")
+
+    else:
+        model.load_from_pretrain(pretrained_path)
+
     train_model(
         model,
         train_loader,
@@ -266,6 +277,19 @@ if __name__ == "__main__":
         type=str,
         default="8",
         help="Fold to be used for validation"
+    )
+
+    parser.add_argument(
+        "--pretrained_path",
+        type=str,
+        default="",
+        help="Path of the model trained to do transfer learning"
+    )
+
+    parser.add_argument(
+        "--freeze_base",
+        action="store_false",
+        default=True
     )
 
     parser.add_argument(
