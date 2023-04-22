@@ -1,5 +1,5 @@
 Este módulo contém todos os processos necessários para reproduzir experimentos
-com as [PANNs](https://ieeexplore.ieee.org/abstract/document/9229505/)
+com as [PANNs](https://ieeexplore.ieee.org/abstract/document/9229505/).
 Para qualquer atividade aqui dentro, primeiro instale e configure o ambiente necessário e o ative:
 
 ```bash
