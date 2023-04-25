@@ -38,33 +38,37 @@ def main(params):
         pin_memory=True
     )
 
-    output_dict = {}
+    audio_names = []
+    clipwise_outputs = []
+    targets = []
 
     for batch_data_dict in loader:
-        batch_waveform_dict = {"waveform": move_data_to_device(batch_data_dict["waveform"], device)}
-        batch_target_dict = {"target": move_data_to_device(batch_data_dict["target"], device)}
+        batch_audio_name = move_data_to_device(batch_data_dict["audio_name"], device)
+        batch_waveform = move_data_to_device(batch_data_dict["waveform"], device)
+        batch_target = move_data_to_device(batch_data_dict["target"], device)
 
         with torch.no_grad():
             logged_model.eval()
-            batch_output = logged_model(batch_waveform_dict["waveform"])
+            batch_output = logged_model(batch_waveform)
 
-        append_to_dict(output_dict, 'clipwise_output', batch_output['clipwise_output'])
-        append_to_dict(output_dict, 'target', batch_target_dict['target'])
+        audio_names.append(batch_audio_name)
+        clipwise_outputs.append(batch_output)
+        targets.append(batch_target)
 
-    # pylint: disable=consider-iterating-dictionary
-    for key in output_dict.keys():
-        output_dict[key] = np.concatenate(output_dict[key], axis=0)
+    targets = np.concatenate(targets, axis=0)
+    clipwise_outputs = np.concatenate(clipwise_outputs, axis=0)
+    audio_names = np.concatenate(audio_names, axis=0)
 
     if device == 'cuda':
-        y_true = output_dict['target'].data.cpu().numpy()
-        y_pred = output_dict['clipwise_output'].data.cpu().numpy()
+        y_true = targets.data.cpu().numpy()
+        y_pred = clipwise_outputs.data.cpu().numpy()
 
     else:
-        y_true = output_dict['target']
-        y_pred = output_dict['clipwise_output']
+        y_true = targets
+        y_pred = clipwise_outputs
 
-    predict_indexes = np.argmax(y_true, axis=-1)
-    class_indices = np.argmax(y_pred, axis=-1)
+    class_indices = np.argmax(y_true, axis=-1)
+    predict_indexes = np.argmax(y_pred, axis=-1)
     print(classification_report(
         class_indices,
         predict_indexes,
