@@ -61,14 +61,6 @@ def do_mixup(x, mixup_lambda):
         x[1 :: 2].transpose(0, -1) * mixup_lambda[1 :: 2]).transpose(0, -1)
     return out
 
-# pylint: disable=redefined-builtin
-def append_to_dict(dict, key, value):
-    """Update or create a dictionary with 'key' appending the value to a list"""
-    if key in dict.keys():
-        dict[key].append(value)
-    else:
-        dict[key] = [value]
-
 def set_labels(dataset_dir):
     """Find the classes of a directory and returns them with a
     dictionary{label: integer} for each class from an audio directory """

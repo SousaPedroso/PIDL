@@ -7,7 +7,7 @@ import os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 import argparse
 # pylint: disable=import-error
-from utils.utilities import set_labels, move_data_to_device, append_to_dict
+from utils.utilities import set_labels, move_data_to_device
 from utils.dataset import EvaluateSampler, GtzanDataset, collate_fn
 import numpy as np
 import mlflow
