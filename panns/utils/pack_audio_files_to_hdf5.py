@@ -13,6 +13,7 @@ from utilities import to_one_hot, float32_to_int16, set_labels
 def pack_audio_files_to_hdfs(args: argparse.Namespace):
     dataset_dir = args.dataset_dir
     workspace_dir = args.workspace_dir
+    suffix = args.suffix
     sample_rate = args.sample_rate
     clip_num = args.clip_num
     classes_num = args.classes_num
@@ -22,7 +23,12 @@ def pack_audio_files_to_hdfs(args: argparse.Namespace):
     rng = np.random.default_rng(135)
 
     audios_dir = os.path.abspath(os.path.join(dataset_dir))
-    packed_hdf5_path = os.path.abspath(os.path.join(workspace_dir, "features", "waveform.h5"))
+    packed_hdf5_path = os.path.abspath(os.path.join(workspace_dir, "features"))
+
+    if not suffix.isspace():
+        packed_hdf5_path = os.path.join(packed_hdf5_path, f"waveform_{suffix}_seconds.h5")
+    else:
+        packed_hdf5_path = os.path.join(packed_hdf5_path, "waveform.h5")
 
     if not os.path.exists(os.path.dirname(packed_hdf5_path)):
         os.makedirs(os.path.dirname(packed_hdf5_path))
@@ -117,6 +123,15 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="Directory of your workspace."
+    )
+
+    parser.add_argument(
+        "--suffix",
+        type=str,
+        default="",
+        help="Suffix to the append to workspace file. Default ''\
+        When provided, it'll change append to the filename _durationprovided_seconds\
+        Example: suffix = 1_15, waveform_1_15_seconds."
     )
 
     parser.add_argument(
