@@ -1,3 +1,9 @@
+# compiled bytecodes
 *.pyc
+
+# mlflow
 *.db
 */mlruns
+
+# jupyter checkpoints
+*.ipynb_checkpoints
