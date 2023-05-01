@@ -48,6 +48,9 @@ class ConvBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
+        self.relu = nn.ReLU()
+        self.relu2 = nn.ReLU()
+
         self.init_weight()
 
     # pylint: disable=missing-function-docstring
@@ -61,8 +64,8 @@ class ConvBlock(nn.Module):
     def forward(self, input, pool_size=(2, 2), pool_type='avg'):
         # pylint: disable=invalid-name
         x = input
-        x = F.relu_(self.bn1(self.conv1(x)))
-        x = F.relu_(self.bn2(self.conv2(x)))
+        x = self.relu(self.bn1(self.conv1(x)))
+        x = self.relu2(self.bn2(self.conv2(x)))
         if pool_type == 'max':
             x = F.max_pool2d(x, kernel_size=pool_size)
         elif pool_type == 'avg':
@@ -131,6 +134,8 @@ class Cnn14(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
+        self.relu_cnn14 = nn.ReLU()
+
         self.init_weight()
 
     # pylint: disable=missing-function-docstring
@@ -188,7 +193,7 @@ class Cnn14(nn.Module):
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
         x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu_(self.fc1(x))
+        x = self.relu_cnn14((self.fc1(x)))
         embedding = F.dropout(x, p=0.5, training=self.training)
 
         return embedding
