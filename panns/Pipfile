@@ -9,6 +9,9 @@ librosa = "==0.8.0"
 mlflow = "==1.30.0"
 h5py = "==3.8.0"
 torchlibrosa = "==0.1.0"
+captum = "*"
+notebook = "*"
+seaborn = "*"
 
 [dev-packages]
 pylint = "*"
