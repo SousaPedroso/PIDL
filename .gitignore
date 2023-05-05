@@ -7,3 +7,6 @@
 
 # jupyter checkpoints
 *.ipynb_checkpoints
+
+# Database input and output from interpretability 
+data/
