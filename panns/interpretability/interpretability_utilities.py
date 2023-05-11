@@ -16,6 +16,16 @@ def plot_frame_attributions(attributions, title="Average Frames importance using
     plt.xlabel("Frames")
     plt.title(title)
 
+# to-do refactor this method and above in one
+# pylint: disable=line-too-long
+def plot_layer_attribution_importance(attributions, title="Average layer importance using DeepLift"):
+    """ Auxiliar method to plot the attributions mean for each input """
+    plt.figure(figsize=(10, 6))
+    plt.bar(np.arange(attributions.size()[0]), np.mean(attributions.cpu().detach().numpy(), axis=(1,2,3)))
+    plt.xlabel("Inputs")
+    plt.ylabel("Average Attribution")
+    plt.title(title)
+
 def load_workspace_file(workspace_file_path, ref_fold, dataset_dir, device):
     """ Load the data from the workspace for a given fold and returns the waveform and labels
         with the respectives in.
