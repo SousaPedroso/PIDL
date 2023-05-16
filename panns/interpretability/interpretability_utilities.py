@@ -16,14 +16,22 @@ def plot_frame_attributions(attributions, title="Average Frames importance using
     plt.xlabel("Frames")
     plt.title(title)
 
-# to-do refactor this method and above in one
+# to-do refactor this method, below and above in one
 # pylint: disable=line-too-long
 def plot_layer_attribution_importance(attributions, title="Average layer importance using DeepLift"):
     """ Auxiliar method to plot the attributions mean for each input """
     plt.figure(figsize=(10, 6))
     plt.bar(np.arange(attributions.size()[0]), np.mean(attributions.cpu().detach().numpy(), axis=(1,2,3)))
-    plt.xlabel("Inputs")
+    plt.xlabel("Audio")
     plt.ylabel("Average Attribution")
+    plt.title(title)
+
+def plot_audio_attributions(attributions, title="Average Audios importance using Deconvolution"):
+    """ Auxiliar method to plot the attributions"""
+    plt.figure(figsize=(10, 6))
+    plt.bar(np.arange(attributions.size()[0]), np.mean(attributions.cpu().detach().numpy(), axis=1))
+    plt.xlabel("Áudio")
+    plt.ylabel("Atribuição")
     plt.title(title)
 
 def load_workspace_file(workspace_file_path, ref_fold, dataset_dir, device):
