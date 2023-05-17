@@ -24,7 +24,7 @@ def main(params):
     batch_size = params.batch_size
     device = 'cuda' if (params.cuda and torch.cuda.is_available()) else 'cpu'
 
-    labels, _ = set_labels(dataset_dir)
+    labels, lb_to_idx = set_labels(dataset_dir)
     mlflow.set_tracking_uri(params.tracking_server_uri)
 
     logged_model = mlflow.pytorch.load_model(f"runs:/{run_id}/models")
@@ -69,6 +69,11 @@ def main(params):
 
     class_indices = np.argmax(y_true, axis=-1)
     predict_indexes = np.argmax(y_pred, axis=-1)
+
+    # remove labels not used in validation (class imbalance due to cluster otherBirds)
+    unique_classes = np.unique(class_indices)
+    labels = [label for label in labels if lb_to_idx[label] in unique_classes]
+
     print(classification_report(
         class_indices,
         predict_indexes,
