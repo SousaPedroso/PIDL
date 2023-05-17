@@ -15,7 +15,6 @@ def pack_audio_files_to_hdfs(args: argparse.Namespace):
     workspace_dir = args.workspace_dir
     suffix = args.suffix
     sample_rate = args.sample_rate
-    clip_num = args.clip_num
     classes_num = args.classes_num
     duration = args.duration
 
@@ -55,7 +54,7 @@ def pack_audio_files_to_hdfs(args: argparse.Namespace):
     audios_num = len(meta_dict["audio_name"])
 
     # force audios to fixed number of samples
-    effective_length = floor(sample_rate * duration * clip_num)
+    effective_length = floor(sample_rate * duration)
 
     with h5py.File(packed_hdf5_path, "w") as h5_file:
         h5_file.create_dataset(
@@ -86,7 +85,14 @@ def pack_audio_files_to_hdfs(args: argparse.Namespace):
             audio_name = meta_dict["audio_name"][i]
             fold = meta_dict["fold"][i]
             audio_path = meta_dict["audio_path"][i]
-            (audio, _) = librosa.core.load(audio_path, sr=None, duration=duration*clip_num)
+
+            # random period of audio
+            offset = rng.integers(
+                    max(librosa.get_duration(filename=audio_path)-duration, 1)
+            )
+
+            (audio, _) = librosa.core.load(audio_path, offset=offset, sr=None,
+                duration=duration)
             # get only one channel if stereo audio
             if len(audio.shape) == 2:
                 audio = audio[:, 0]
@@ -139,13 +145,6 @@ if __name__ == "__main__":
         type=int,
         default=24000,
         help="Sample rate for load each audio."
-    )
-
-    parser.add_argument(
-        "--clip_num",
-        type=int,
-        default=1,
-        help="Number of clips with d duration for each audio."
     )
 
     parser.add_argument(
