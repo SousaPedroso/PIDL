@@ -81,13 +81,13 @@ def evaluate_model(model, loss_func, validation_loader, device):
         y_true = targets
         y_pred = clipwise_outputs
 
-    predict_indexes = np.argmax(y_true, axis=-1)
-    class_indices = np.argmax(y_pred, axis=-1)
-    # pylint: disable=[invalid-name, line-too-long]
-    f1 = f1_score(predict_indexes, class_indices, average='macro')
-    precision = precision_score(predict_indexes, class_indices, average='macro')
-    recall = recall_score(predict_indexes, class_indices, average="macro")
-    acc = accuracy_score(predict_indexes, class_indices)
+    class_indices = np.argmax(y_true, axis=-1)
+    predict_indexes = np.argmax(y_pred, axis=-1)
+    # pylint: disable=invalid-name
+    f1 = f1_score(class_indices, predict_indexes, average='macro')
+    precision = precision_score(class_indices, predict_indexes, average='macro')
+    recall = recall_score(class_indices, predict_indexes, average="macro")
+    acc = accuracy_score(class_indices, predict_indexes)
 
     output_dict = {"audio_name": audio_names, "target": targets, "output": clipwise_outputs}
 
@@ -172,7 +172,7 @@ def run(params):
 
     config = dict(sample_rate=params.audio_sample_rate, window_size=params.audio_window_size,
         hop_size=params.audio_hop_size, mel_bins=params.spectrum_mel_bins, fmin=params.audio_fmin,
-        fmax=params.audio_fmax, classes_num=params.num_classes, freeze_base=params.freeze_base)
+        fmax=params.audio_fmax, classes_num=params.classes_num, freeze_base=params.freeze_base)
 
     train_loader, validation_loader = load_data(train_path, holdout_fold, batch_size, num_workers)
     model = Transfer_Cnn14(**config)
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--num_classes",
+        "--classes_num",
         type=int,
         default=8
     )
