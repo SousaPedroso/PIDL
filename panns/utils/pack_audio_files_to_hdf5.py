@@ -40,8 +40,6 @@ def pack_audio_files_to_hdfs(args: argparse.Namespace):
             audio_names.append(name)
             audio_paths.append(filepath)
 
-    audio_names = sorted(audio_names)
-    audio_paths = sorted(audio_paths)
     _, lb_to_idx = set_labels(audios_dir)
     # idx_to_lb = {idx: lb for idx, lb in enumerate(labels)}
 
