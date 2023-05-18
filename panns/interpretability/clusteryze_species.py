@@ -1,18 +1,12 @@
-"""The initital ideia for this module is to determine the optimal number of clusters
+"""The initital idea for this module is to determine the optimal number of clusters
 for OtherBirds class through reduced spectrograms features given what a model learned,
 but it can be applied for all the classes
 """
-# pylint:disable=wrong-import-position
 import os
 import sys
 import shutil
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
-# pylint: disable=import-error
-from math import floor
 from argparse import ArgumentParser
-from utils.utilities import move_data_to_device
-import numpy as np
-import librosa
+from interpretability_utilities import evaluate_inputs
 import seaborn as sns
 import matplotlib.pyplot as plt
 import mlflow
@@ -20,45 +14,6 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN
 
 # pylint: disable=[missing-function-docstring, too-many-locals]
-def evaluate_inputs(model, audios_path, audio_class, sample_rate, duration):
-    rng = np.random.default_rng(135)
-
-    effective_length = floor(sample_rate * duration)
-
-    full_path = os.path.join(audios_path, audio_class)
-
-    audios = []
-    audios_name = []
-    for file in os.listdir(full_path):
-        offset = rng.integers(
-            max(librosa.get_duration(filename=os.path.join(full_path, file))-duration, 1)
-        )
-
-        (audio, _) = librosa.core.load(os.path.join(full_path, file),
-                offset=offset, sr=None, duration=duration)
-        # get only one channel if stereo audio
-        if len(audio.shape) == 2:
-            audio = audio[:, 0]
-
-        len_audio = len(audio)
-        if len_audio < effective_length:
-            new_audio = np.zeros(effective_length, dtype=audio.dtype)
-            start = rng.integers(effective_length - len_audio)
-            new_audio[start:start + len_audio] = audio
-            audio = new_audio.astype(np.float32)
-        elif len_audio > effective_length:
-            start = rng.integers(len_audio - effective_length)
-            audio = audio[start:start + effective_length].astype(np.float32)
-        else:
-            audio = audio.astype(np.float32)
-
-        audios.append(audio)
-        audios_name.append([os.path.join(full_path, file), file])
-
-    audios_evaluation = model(move_data_to_device(np.array(audios), "cpu"))
-    return audios_evaluation, audios_name
-
-# pylint: disable=missing-function-docstring
 def run(params):
     audios_path = params.audios_path
     audio_class = params.audio_class
