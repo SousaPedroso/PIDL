@@ -30,22 +30,27 @@ def evaluate_inputs(model, audios_path, audio_class, sample_rate, duration):
     audios = []
     audios_name = []
     for file in os.listdir(full_path):
-        (audio, _) = librosa.core.load(os.path.join(full_path, file), sr=None, duration=duration)
+        offset = rng.integers(
+            max(librosa.get_duration(filename=os.path.join(full_path, file))-duration, 1)
+        )
+
+        (audio, _) = librosa.core.load(os.path.join(full_path, file),
+                offset=offset, sr=None, duration=duration)
         # get only one channel if stereo audio
         if len(audio.shape) == 2:
             audio = audio[:, 0]
 
-            len_audio = len(audio)
-            if len_audio < effective_length:
-                new_audio = np.zeros(effective_length, dtype=audio.dtype)
-                start = rng.integers(effective_length - len_audio)
-                new_audio[start:start + len_audio] = audio
-                audio = new_audio.astype(np.float32)
-            elif len_audio > effective_length:
-                start = rng.integers(len_audio - effective_length)
-                audio = audio[start:start + effective_length].astype(np.float32)
-            else:
-                audio = audio.astype(np.float32)
+        len_audio = len(audio)
+        if len_audio < effective_length:
+            new_audio = np.zeros(effective_length, dtype=audio.dtype)
+            start = rng.integers(effective_length - len_audio)
+            new_audio[start:start + len_audio] = audio
+            audio = new_audio.astype(np.float32)
+        elif len_audio > effective_length:
+            start = rng.integers(len_audio - effective_length)
+            audio = audio[start:start + effective_length].astype(np.float32)
+        else:
+            audio = audio.astype(np.float32)
 
         audios.append(audio)
         audios_name.append([os.path.join(full_path, file), file])
