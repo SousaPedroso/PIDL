@@ -9,18 +9,19 @@ import torch.utils.data as data
 import torch.optim as optim
 
 from panns_model import Transfer_Cnn14
-from utils.utilities import move_data_to_device, do_mixup, clip_nll
+from utils.utilities import move_data_to_device, Mixup, do_mixup, clip_nll
 from utils.dataset import GtzanDataset, TrainSampler, EvaluateSampler, collate_fn
 
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 
 import mlflow
 
-def load_data(hdf5_path, holdout_fold, batch_size, num_workers=0):
+def load_data(hdf5_path, holdout_fold, batch_size, augmentation=False, num_workers=0):
     """Load an hdf5 file and prepare train data and validation data to be iterated"""
     dataset = GtzanDataset()
 
-    train_sampler = TrainSampler(hdf5_path, holdout_fold, batch_size)
+    train_sampler = TrainSampler(hdf5_path, holdout_fold,
+        batch_size * 2 if augmentation else batch_size)
     validation_sampler = EvaluateSampler(hdf5_path, holdout_fold, batch_size)
 
     train_loader = data.DataLoader(
@@ -97,7 +98,7 @@ def evaluate_model(model, loss_func, validation_loader, device):
 def train_model(model, train_loader, validation_loader, tracking_server_uri,
                 experiment_name, iterations, audio_augmentation, device, config):
 
-    mlflow.set_tracking_uri(tracking_server_uri)
+    mlflow.set_tracking_uri(f"{tracking_server_uri}:5000")
     mlflow.set_experiment(experiment_name)
 
     warnings.filterwarnings("ignore")
@@ -105,12 +106,20 @@ def train_model(model, train_loader, validation_loader, tracking_server_uri,
     optimizer = optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999),
         eps=1e-08, weight_decay=0., amsgrad=True)
 
+    if audio_augmentation:
+        miuxp_augmenter = Mixup(mixup_alpha=1.)
+
     with mlflow.start_run():
         mlflow.set_tag("model", "PANNs")
 
         for iteration, batch_data_dict in enumerate(train_loader):
             if iteration == iterations:
                 break
+
+            if audio_augmentation:
+                batch_data_dict["mixup_lambda"] = miuxp_augmenter.get_lambda(
+                    len(batch_data_dict["waveform"])
+                )
 
             for key in batch_data_dict.keys():
                 batch_data_dict[key] = move_data_to_device(batch_data_dict[key], device)
@@ -174,7 +183,8 @@ def run(params):
         hop_size=params.audio_hop_size, mel_bins=params.spectrum_mel_bins, fmin=params.audio_fmin,
         fmax=params.audio_fmax, classes_num=params.classes_num, freeze_base=params.freeze_base)
 
-    train_loader, validation_loader = load_data(train_path, holdout_fold, batch_size, num_workers)
+    train_loader, validation_loader = load_data(train_path, holdout_fold, batch_size,
+        audio_aug, num_workers)
     model = Transfer_Cnn14(**config)
     if len(pretrained_path) == 0:
         print("Training model without Transfer Learning")
@@ -222,7 +232,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--tracking_server_uri",
         type=str,
-        default="http://127.0.0.1:5000"
+        default="http://127.0.0.1"
     )
 
     parser.add_argument(

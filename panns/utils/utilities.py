@@ -5,14 +5,7 @@ Methods available:
     Change data type from 16-bit int to 32-bit float and applies normalization
     Change data type from numpy to torch
     Mixup operation
-    Update a dictionary with a specific key, appending the value to a list
-    Set integer labels for each class from an audio directory with the following structure
-        bird_species2
-
-        bird_species2
-        ...
-
-        bird_speciesn
+    Mixup class augmenter
     negative log likelihood
 """
 import os
@@ -47,6 +40,29 @@ def move_data_to_device(x, device):
         return x
 
     return x.to(device)
+
+# pylint: disable=too-few-public-methods
+class Mixup:
+    """Mixup coefficient generator.
+    """
+    def __init__(self, mixup_alpha, random_seed=135):
+        self.mixup_alpha = mixup_alpha
+        self.random_state = np.random.default_rng(random_seed)
+
+    def get_lambda(self, batch_size):
+        """Get mixup random coefficients.
+        Args:
+          batch_size: int
+        Returns:
+          mixup_lambdas: (batch_size,)
+        """
+        mixup_lambdas = []
+        for _ in range(0, batch_size, 2):
+            lam = self.random_state.beta(self.mixup_alpha, self.mixup_alpha, 1)[0]
+            mixup_lambdas.append(lam)
+            mixup_lambdas.append(1. - lam)
+
+        return np.array(mixup_lambdas)
 
 def do_mixup(x, mixup_lambda):
     """Mixup x of even indexes (0, 2, 4, ...) with x of odd indexes 
