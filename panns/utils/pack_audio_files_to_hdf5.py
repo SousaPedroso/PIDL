@@ -132,7 +132,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--suffix",
         type=str,
-        default="",
+        default=" ",
         help="Suffix to the append to workspace file. Default ''\
         When provided, it'll change append to the filename _durationprovided_seconds\
         Example: suffix = 1_15, waveform_1_15_seconds."
