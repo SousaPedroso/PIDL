@@ -50,9 +50,10 @@ def load_workspace_file(workspace_file_path, ref_fold, dataset_dir, device):
         inp_data = move_data_to_device(inp_data, device)
         labels = h5_file["target"][indexes]
         labels = move_data_to_device(labels, device)
+        audios_name = move_data_to_device(h5_file["audio_name"][indexes], device)
 
     dataset_labels, lb_to_idx = set_labels(dataset_dir)
-    return inp_data, indexes, labels, dataset_labels, lb_to_idx
+    return inp_data, indexes, labels, dataset_labels, lb_to_idx, audios_name
 
 
 def zero_crossing_rate(frame):
