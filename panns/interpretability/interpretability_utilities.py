@@ -11,30 +11,34 @@ import librosa
 import h5py
 import matplotlib.pyplot as plt
 
-def plot_frame_attributions(attributions, title="Average Frames importance using Deconvolution"):
+def plot_frame_attributions(attributions, title="", sample_rate=32000):
     """ Auxiliar method to plot the attributions"""
     plt.figure(figsize=(10, 6))
-    plt.bar(np.arange(len(attributions[0])), np.mean(attributions.cpu().detach().numpy(), axis=0))
-    plt.xlabel("Frames")
-    plt.title(title)
+    plt.plot(np.arange(len(attributions[0])), np.mean(attributions.cpu().detach().numpy(), axis=0))
+    plt.xticks(np.arange(0, attributions.size()[1], int(sample_rate/10)),
+        np.arange(0, round(len(attributions[0])/sample_rate, 2), 0.10, dtype=np.float32))
+    if not title.isspace():
+        plt.title(title)
 
 # to-do refactor this method, below and above in one
 # pylint: disable=line-too-long
-def plot_layer_attribution_importance(attributions, title="Average layer importance using DeepLift"):
+def plot_layer_attribution_importance(attributions, title=""):
     """ Auxiliar method to plot the attributions mean for each input """
     plt.figure(figsize=(10, 6))
-    plt.bar(np.arange(attributions.size()[0]), np.mean(attributions.cpu().detach().numpy(), axis=(1,2,3)))
-    plt.xlabel("Audio")
-    plt.ylabel("Average Attribution")
-    plt.title(title)
+    plt.plot(np.arange(attributions.size()[0]), np.mean(attributions.cpu().detach().numpy(), axis=(1,2,3)))
+    plt.xlabel("Entrada")
+    plt.ylabel("Atribuição")
+    if not title.isspace():
+        plt.title(title)
 
-def plot_audio_attributions(attributions, title="Average Audios importance using Deconvolution"):
+def plot_audio_attributions(attributions, title=""):
     """ Auxiliar method to plot the attributions"""
     plt.figure(figsize=(10, 6))
-    plt.bar(np.arange(attributions.size()[0]), np.mean(attributions.cpu().detach().numpy(), axis=1))
-    plt.xlabel("Áudio")
+    plt.plot(np.arange(attributions.size()[0]), np.mean(attributions.cpu().detach().numpy(), axis=1))
+    plt.xlabel("Entrada")
     plt.ylabel("Atribuição")
-    plt.title(title)
+    if not title.isspace():
+        plt.title(title)
 
 def load_workspace_file(workspace_file_path, ref_fold, dataset_dir, device):
     """ Load the data from the workspace for a given fold and returns the waveform and labels
