@@ -15,6 +15,8 @@ def plot_frame_attributions(attributions, title="", sample_rate=32000):
     """ Auxiliar method to plot the attributions"""
     plt.figure(figsize=(10, 6))
     plt.plot(np.arange(len(attributions[0])), np.mean(attributions.cpu().detach().numpy(), axis=0))
+    plt.xlabel("Tempo [s]")
+    plt.ylabel("Atribuição")
     plt.xticks(np.arange(0, attributions.size()[1], int(sample_rate/10)),
         np.arange(0, round(len(attributions[0])/sample_rate, 2), 0.10, dtype=np.float32))
     if not title.isspace():
