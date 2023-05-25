@@ -22,7 +22,11 @@ def main(flags):
 
         for audio in audios:
 
-            for snippet in range(snippets):
+            for snippet in range(min(snippets,
+                int((librosa.get_duration(
+                    filename=os.path.join(audios_input_path, background, audio)
+                )-audio_duration)/window))):
+
                 signal, _ = librosa.load(os.path.join(audios_input_path, background, audio),
                     sr=audios_sample_rate, duration=audio_duration, offset=round(snippet*window, 3))
 
