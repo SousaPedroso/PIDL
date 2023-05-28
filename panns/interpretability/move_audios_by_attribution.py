@@ -61,7 +61,7 @@ def run(params):
             print(exc)
             sys.exit()
 
-    for i in range(0, len(audios_list)-batch_size, batch_size):
+    for i in range(0, len(audios_list), batch_size):
         attr = deep_lift.attribute(audios_list[i:i+batch_size], target=lb_to_idx[audio_class])
         mean_attr = torch.mean(attr, dim=1)
 
