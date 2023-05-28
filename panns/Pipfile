@@ -12,6 +12,8 @@ torchlibrosa = "==0.1.0"
 captum = "*"
 notebook = "*"
 seaborn = "*"
+gunicorn = "*"
+numpy = "==1.23.5"
 
 [dev-packages]
 pylint = "*"
