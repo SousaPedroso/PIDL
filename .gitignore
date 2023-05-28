@@ -10,3 +10,6 @@
 
 # Database input and output from interpretability 
 data/
+
+# panns model
+models/
