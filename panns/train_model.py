@@ -185,9 +185,14 @@ def run(params):
 
     train_loader, validation_loader = load_data(train_path, holdout_fold, batch_size,
         audio_aug, num_workers)
+
+    if len(pretrained_path) == 0:
+        config["freeze_base"] = False
+
     model = Transfer_Cnn14(**config)
     if len(pretrained_path) == 0:
         print("Training model without Transfer Learning")
+        print("Unfreezing intermediate layers...")
 
     elif not os.path.isfile(pretrained_path):
         raise OSError(f"File {pretrained_path} does not exist")
