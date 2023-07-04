@@ -24,8 +24,6 @@ Esta seção mostra como você pode reproduzir meus experimentos. Não somente o
 
 **Obs**: Não posso ainda fornecer os dados respectivos aos sons da ave [S. Albilora](http://www.wikiaves.com.br/wiki/joao-do-pantanal), nem dos *backgrounds*, assim que eu tiver a permissão retiro essa observação e atualizo o [settings.sh](/settings.sh).
 
-**Obs2**: A versão digitalizada do TCC ainda não está disponível, até final de Julho será colocada aqui.
-
 O [settings.sh](/settings.sh) cria as pastas com os requerimentos de dados e modelo necessário neste trabalho, com uma estrutura da seguinte forma:
 
 ```
