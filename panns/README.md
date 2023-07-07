@@ -19,7 +19,6 @@ Para treinar modelos, o código abaixo pode ser executado. Fique atento quanto a
 python train_model.py --model_iterations 100 --train_path "worskpace_dir\features\waveform.h5" --experiment_name "PANNs default settings" --pretrained_path "pretrained\models\Cnn14.pth"
 ```
 
-Meus experimentos com os métodos de interpretabilidades estão separados em 3 notebooks,
-da mesma forma que separei no TCC: 1 para métodos baseados em gradientes locais, outro para métodos baseados em referência/conceitos e por último o método baseado em pertubação _LIME_. Todos na pasta de [interpretabilidade](/panns/interpretability/). Além disso, há alguns **scripts** e arquivos úteis para coordenar os notebooks e ideias obtidas através da interpretabilidade.
+Meus experimentos com os métodos de interpretabilidades estão separados em 3 notebooks: 1 para métodos baseados em gradientes locais, outro para métodos baseados em referência/conceitos e por último o método baseado em pertubação _LIME_. Todos na pasta de [interpretabilidade](/panns/interpretability/). Além disso, há alguns **scripts** e arquivos úteis para coordenar os notebooks e ideias obtidas através da interpretabilidade.
 
 Os métodos baseados em gradiente foram usados para ter uma visão geral do comportamento do modelo em cada experimento, enquanto os métodos baseados em referência foram utilizados para maior entendimento da influência das entradas e diferentes características dos áudios para o modelo. Por último, o [LIME](https://arxiv.org/abs/1602.04938) foi pensado em específico para trabalhar com o S. albilora e entender algumas variações do que foi aprendido pelo modelo.
